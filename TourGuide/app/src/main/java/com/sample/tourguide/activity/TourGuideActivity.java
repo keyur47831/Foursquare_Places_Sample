@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 
+import com.google.android.gms.maps.GoogleMap;
 import com.sample.tourguide.fragment.FragmentDrawer;
 import com.sample.tourguide.fragment.HomeFragment;
 import com.sample.tourguide.fragment.ShowNearbyFragment;
@@ -20,10 +21,11 @@ import com.sample.tourguide.fragment.ShowTourMapFragment;
 import com.tourguide.R;
 
 
-public class TourGuideActivity extends AppCompatActivity implements FragmentDrawer.FragmentDrawerListener{
+public class TourGuideActivity extends AppCompatActivity implements HomeFragment.OnGoogleMapFragmentListener, FragmentDrawer.FragmentDrawerListener
+{
     private Toolbar mToolbar;
     private FragmentDrawer drawerFragment;
-
+    protected GoogleMap mUIGoogleMap;
     @Override
     protected void onCreate (Bundle savedInstanceState) {
         super.onCreate (savedInstanceState);
@@ -62,6 +64,11 @@ public class TourGuideActivity extends AppCompatActivity implements FragmentDraw
     }
     @Override
     public void onDrawerItemSelected(View view, int position) {
+
+    }
+
+    public void onMapReady(GoogleMap map) {
+        mUIGoogleMap = map;
 
     }
     private void displayView(int position) {
