@@ -1,46 +1,105 @@
 package com.sample.tourguide.activity;
 
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.location.Location;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.sample.tourguide.Define;
 import com.sample.tourguide.fragment.FragmentDrawer;
-import com.sample.tourguide.fragment.HomeFragment;
-import com.sample.tourguide.fragment.ShowNearbyFragment;
-import com.sample.tourguide.fragment.ShowTourMapFragment;
+import com.sample.tourguide.service.LocationTracker;
 import com.tourguide.R;
 
 
-public class TourGuideActivity extends AppCompatActivity implements HomeFragment.OnGoogleMapFragmentListener, FragmentDrawer.FragmentDrawerListener
+public class TourGuideActivity extends AppCompatActivity implements FragmentDrawer.FragmentDrawerListener
 {
     private Toolbar mToolbar;
     private FragmentDrawer drawerFragment;
-    protected GoogleMap mUIGoogleMap;
+
+    private GoogleMap googleMap;
+    protected static final String TAG = "basic-location-sample";
+    Location mCurrentLocation;
+    private LocationTracker mLocationTracker;
+
     @Override
     protected void onCreate (Bundle savedInstanceState) {
-        super.onCreate (savedInstanceState);
+        super.onCreate(savedInstanceState);
         setContentView (R.layout.activity_main);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-
+        mLocationTracker=new LocationTracker(this,LocationChanged);
         setSupportActionBar (mToolbar);
         getSupportActionBar().setDisplayShowHomeEnabled (true);
-        drawerFragment = (FragmentDrawer)
-                getSupportFragmentManager().findFragmentById (R.id.fragment_navigation_drawer);
-        drawerFragment.setUp (R.id.fragment_navigation_drawer, (DrawerLayout) findViewById (R.id.drawer_layout), mToolbar);
-        drawerFragment.setDrawerListener (this);
-        displayView (0);
+
+            drawerFragment = (FragmentDrawer)
+                    getSupportFragmentManager ().findFragmentById (R.id.fragment_navigation_drawer);
+            drawerFragment.setUp (R.id.fragment_navigation_drawer, (DrawerLayout) findViewById (R.id.drawer_layout), mToolbar);
+            drawerFragment.setDrawerListener (this);
+           // displayView (0);
+        try {
+
+            // Loading map
+           initilizeMap();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
+    private void initilizeMap() {
+        if (googleMap == null) {
+            googleMap = ((MapFragment) getFragmentManager().findFragmentById(
+                    R.id.map)).getMap ();
+
+            // check if map is created successfully or not
+            if (googleMap == null) {
+                Toast.makeText (getApplicationContext (),
+                        "Sorry! unable to create maps", Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mCurrentLocation=mLocationTracker.getLocation ();
+
+    }
+    @Override
+    protected void onStop() {
+        super.onStop ();
+
+    }
+    @Override
+    public void onResume()
+    {
+        super.onResume ();
+
+    }
+    /*
     @Override
     public boolean onCreateOptionsMenu (Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -61,17 +120,24 @@ public class TourGuideActivity extends AppCompatActivity implements HomeFragment
         }
 
         return super.onOptionsItemSelected (item);
-    }
+    } */
     @Override
     public void onDrawerItemSelected(View view, int position) {
 
     }
+    private LocationTracker.onPositionChanged LocationChanged = new LocationTracker.onPositionChanged(){
+        @Override
+        public  void getNewLocation(Location location)
+        {
+            mCurrentLocation=location;
+            UpdateMap();
+        }
 
-    public void onMapReady(GoogleMap map) {
-        mUIGoogleMap = map;
+    };
 
-    }
-    private void displayView(int position) {
+
+
+   /* private void displayView(int position) {
         Fragment fragment = null;
         String title = getString(R.string.app_name);
         switch (position) {
@@ -100,5 +166,80 @@ public class TourGuideActivity extends AppCompatActivity implements HomeFragment
             // set the toolbar title
             getSupportActionBar().setTitle(title);
         }
+    } */
+    public void showSettingsAlert() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+        // Setting Dialog Title
+        alertDialog.setTitle(getString(R.string.GPS_connection));
+
+        // Setting Dialog Message
+        alertDialog.setMessage(getString(R.string.no_GPS));
+
+        // On pressing Settings button
+        alertDialog.setPositiveButton(getString (R.string.action_settings), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity (intent);
+                dialog.dismiss ();
+            }
+        });
+        // on pressing cancel button
+        alertDialog.setNegativeButton(getString (R.string.alert_dialog_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        // Showing Alert Message
+        alertDialog.show();
     }
-}
+    public  void showInternetSettingAlert() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+        // Setting Dialog Title
+        alertDialog.setTitle(getString (R.string.internet_connection));
+
+        // Setting Dialog Message
+        alertDialog.setMessage(getString (R.string.no_internet));
+
+        // On pressing Settings button
+        alertDialog.setPositiveButton(getString (R.string.action_settings), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                startActivity (intent);
+                dialog.dismiss ();
+            }
+        });
+        // on pressing cancel button
+        alertDialog.setNegativeButton(getString(R.string.alert_dialog_cancel),new DialogInterface.OnClickListener(){
+public void onClick(DialogInterface dialog,int which){
+        dialog.cancel();
+        }
+        });
+
+        // Showing Alert Message
+        alertDialog.show();
+    }
+
+    public void UpdateMap() {
+        // Provides a simple way of getting a device's location and is well suited for
+        // applications that do not require a fine-grained location and that do not need location
+        // updates. Gets the best and most recent location currently available, which may be null
+        // in rare cases when a location is not available.
+
+            //initilizeMap();
+            LatLng mCurrentLatLng=new LatLng(mCurrentLocation.getLatitude (),mCurrentLocation.getLongitude ());
+            MarkerOptions marker = new MarkerOptions ().position(mCurrentLatLng).title("Hello Maps ");
+
+// adding marker
+            marker.icon(BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_BLUE));
+            googleMap.addMarker (marker);
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(mCurrentLatLng).zoom(14).build();
+            googleMap.setMyLocationEnabled(true);
+            googleMap.animateCamera (CameraUpdateFactory.newCameraPosition (cameraPosition));
+
+        }
+    }
+
+
