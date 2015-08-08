@@ -11,6 +11,10 @@ public class Define {
     //public static String GOOGLE_KEY="AIzaSyAY-pIjIay2nShWwyCF0QkjwY92d_3tvss";
     public static String CLIENT_ID="XWLGRC03I0EFFEFCSIKSRTDVN5IK5Y1JMBR4DOWOAK2TC25C";
     public static String CLINED_SECRET="K1QFNQVG0JSK22B0ASDZXRTDT2FEVBTTQS2KSESFRWVW1153";
+    public static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+
+    // The minimum time between updates in milliseconds
+    public static final long MIN_TIME_BW_UPDATES = 1000 * 20 * 1; // 20 sec aggressive
     public  static boolean isDataConnAvailable(final Context mContext)
     {
         ConnectivityManager connectivityManager = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -23,7 +27,7 @@ public class Define {
     }
     public  static boolean isGPSEnable(final Context mContext)
     {
-        LocationManager service = (LocationManager) mContext.getSystemService (mContext.LOCATION_SERVICE);
+        LocationManager service = (LocationManager) mContext.getSystemService (Context.LOCATION_SERVICE);
         return service.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
     public static enum ErrorStatus {

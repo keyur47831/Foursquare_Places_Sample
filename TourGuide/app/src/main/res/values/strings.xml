@@ -5,22 +5,23 @@
     <string name="action_settings">Settings</string>
     <string name="nav_item_home">My Location</string>
     <string name="nav_item_nearby">Show Nearby</string>
-    <string name="nav_item_tour_route">Show Tour Route</string>
+    <string name="nav_item_tour_route">Show App. Route</string>
+    <string name="nav_item_tour_route_data">Show Tour Route</string>
     <string name="drawer_open">Select Options</string>
     <string name="drawer_close">Show Options</string>
     <string name="connection_error">Failed to fetch data due to connection error</string>
     <string name="no_connection">Network Connection un-available</string>
     <string name="action_refresh">Refresh</string>
-    <string name="internet_connection">Internet Connection</string>
-    <string name="no_internet">Enable Internet Acess"</string>
+    <string name="internet_connection">Internet</string>
+    <string name="no_internet">Please Enable Internet Connection"</string>
     <string name="GPS_connection">GPS Enable</string>
-    <string name="no_GPS">"Enable GPS Access"</string>
+    <string name="no_GPS">"Please enable GPS Access"</string>
     <string name="alert_dialog_cancel">Cancel</string>
     <string name="success">Success</string>
     <string name="fail">Failed</string>
     <string name="alert_dialog_ok">OK</string>
+    <string name="here">You are Here</string>
     <string-array name="nav_drawer_labels">
-
         <item>@string/nav_item_home</item>
         <item>@string/nav_item_nearby</item>
         <item>@string/nav_item_tour_route</item>

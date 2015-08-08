@@ -9,7 +9,6 @@ import com.android.volley.VolleyError;
 
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.sample.tourguide.Define;
 import com.sample.tourguide.model.LocationModel;
 
 import org.json.JSONArray;
@@ -23,12 +22,12 @@ import java.util.List;
  * Created by keyur on 08-08-2015.
  */
 public class FourSquareDataParser {
-    protected onJsonParseCompleted jParserListner;
+    protected onJsonParseCompleted mJsonParserListner;
     //reference of context
     Context mContext;
     //foursquare URL to fetch data
-    String url;
-    // GPS related variable
+    String mURL;
+    // for logs
     String TAG=FourSquareDataParser.class.getSimpleName ();
 
     private RequestQueue mRequestQueue;
@@ -36,14 +35,11 @@ public class FourSquareDataParser {
     {
         super();
         this.mContext=context;
-        this.url=url;
+        this.mURL =url;
         //this listner will perform call-back to our UI Activity
-        this.jParserListner=listner;
-        //start the location service
-
+        this.mJsonParserListner =listner;
+        //Init our Volley request queue
         mRequestQueue= Volley.newRequestQueue (mContext);
-
-
     }
     public void loadJson()
     {
@@ -52,19 +48,14 @@ public class FourSquareDataParser {
         // This object will make asynchronous http call to fetch data
         // It will register callback function onResponse for the data
         // and will also provide callback function for error handling
-
-        //First check if network connection is available or not
-       // if(Define.isDataConnAvailable (mContext)){
-
-        Log.d(TAG, url);
                 //JsonObject request using volley
-                JsonObjectRequest request = new JsonObjectRequest(url, null,
+                JsonObjectRequest request = new JsonObjectRequest(mURL, null,
                         new Response.Listener<JSONObject>() {
 
                             @Override
                             public void onResponse(JSONObject response) {
-                                parseJSONFromString(response.toString());
-                                Log.d (TAG, response.toString ());
+                                parseJSONFromString (response.toString ());
+
                             }
                         }, new Response.ErrorListener() {
                     @Override
@@ -72,12 +63,12 @@ public class FourSquareDataParser {
                     }
                 }
                 );
-                //Create Instance of VolleyHelper Class
-                //VolleyHelper class has singleton implementation so only 1 object
+                //Create Instance of Volley Request
+                //Volley class has singleton implementation so only 1 object
                 //will be used throughout the life cycle of application.
                 //All the requests should be added in the request queue
-                request.setTag("NearBy");
-            mRequestQueue.add (request);
+                request.setTag(TAG);
+                mRequestQueue.add (request);
 
             }
        // }
@@ -85,8 +76,6 @@ public class FourSquareDataParser {
 
     /*
      * This function will parse the JSON data into the logical Class data.
-     * @param String
-     * @return void
      */
     private void parseJSONFromString(final String JSONdata) {
 
@@ -181,11 +170,13 @@ public class FourSquareDataParser {
         } catch (Exception e) {
 
             e.printStackTrace();
+            //Notify error to UI
+            mJsonParserListner.onParseFailure ();
         }
         //check if we received any data
         if(ParserData == null) {
             //notify failure
-            jParserListner.onParseFailure();
+            mJsonParserListner.onParseFailure ();
 
         }
         else {
@@ -195,7 +186,7 @@ public class FourSquareDataParser {
             //support sorting
             Collections.sort (ParserData, LocationModel.CompareDistance);
             //notify success with sorted arraylist
-            jParserListner.onParseSuccess(ParserData);
+            mJsonParserListner.onParseSuccess (ParserData);
 
         }
 

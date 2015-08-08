@@ -17,18 +17,23 @@ import android.widget.TextView;
  * Created by keyur on 07-08-2015.
  */
 public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDrawerAdapter.MyViewHolder> {
-    List<NavDrawerItem> data = Collections.emptyList ();
+    List<NavDrawerItem> mData = Collections.emptyList ();
+
     private LayoutInflater inflater;
-    private Context context;
-
+    private Context mContext;
+/*
+Constructor for our class
+ */
     public NavigationDrawerAdapter(Context context, List<NavDrawerItem> data) {
-        this.context = context;
+        this.mContext = context;
         inflater = LayoutInflater.from(context);
-        this.data = data;
+        this.mData = data;
     }
-
+/*
+Delete function for removing fragments if any
+ */
     public void delete(int position) {
-        data.remove(position);
+        mData.remove (position);
         notifyItemRemoved(position);
     }
 
@@ -41,15 +46,17 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        NavDrawerItem current = data.get(position);
+        NavDrawerItem current = mData.get(position);
         holder.title.setText(current.getTitle());
     }
 
     @Override
     public int getItemCount() {
-        return data.size();
+        return mData.size();
     }
-
+    /*
+    Inner class for ViewHolder
+     */
     class MyViewHolder extends RecyclerView.ViewHolder {
         TextView title;
 

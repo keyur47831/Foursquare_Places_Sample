@@ -22,6 +22,7 @@ package com.sample.tourguide.service;
         import android.util.Log;
         import android.widget.Toast;
 
+        import com.sample.tourguide.Define;
         import com.tourguide.R;
 
 //import com.foursquare.sample.coffeesearch.R;
@@ -29,14 +30,14 @@ package com.sample.tourguide.service;
 /**
  * Created by keyur on 14-07-2015.
  * This is a Service running in background
- * to fetch the current location of user
+ * to fetch the current mLocation of user
  * It implements Location Listener
  */
 public class LocationTracker extends Service implements LocationListener {
     //context for GPS
     private final Context mContext;
-    //Call-back to notify the change in location
-    protected onPositionChanged LocationListner;
+    //Call-back to notify the change in mLocation
+    protected onPositionChanged mLocationListner;
     // flag for GPS status
     boolean isGPSEnabled = false;
     // flag for network status
@@ -44,37 +45,34 @@ public class LocationTracker extends Service implements LocationListener {
     // flag to indicate is GPS access available
     boolean canGetLocation = false;
 
-    Location location; // location
+    Location mLocation; // Location
     double latitude; // latitude
     double longitude; // longitude
 
     // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
 
-    // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 20 * 1; // 20 sec aggressive
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
     /*
-    * This our default constructor to start location data.
+    * This our default constructor to start mLocation data.
     * @param void
     * @return LocationResults
     */
     public LocationTracker(Context context ,onPositionChanged listner)
     {
         this.mContext=context;
-        this.LocationListner=listner;
-        //init the location service
-        getLocation();
+        this.mLocationListner =listner;
+        //init the mLocation service
+        getmLocation ();
     }
     /*
-    * This function will init all location related data
-    * and start listening for changes in GPS location.
+    * This function will init all mLocation related data
+    * and start listening for changes in GPS mLocation.
     * @param void
     * @return Location
     */
-    public Location getLocation()
+    public Location getmLocation ()
     {
 
         try {
@@ -93,36 +91,34 @@ public class LocationTracker extends Service implements LocationListener {
                 // no network provider is enabled
             } else {
                 this.canGetLocation = true;
-                // First get location from Network Provider
+                // First get mLocation from Network Provider
                 if (isNetworkEnabled) {
                     locationManager.requestLocationUpdates(
                             LocationManager.NETWORK_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    //    Log.d("Network", "Network");
+                            Define.MIN_TIME_BW_UPDATES,
+                            Define.MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                     if (locationManager != null) {
-                        location = locationManager
+                        mLocation = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
+                        if (mLocation != null) {
+                            latitude = mLocation.getLatitude();
+                            longitude = mLocation.getLongitude();
                         }
                     }
                 }
                 // if GPS Enabled get lat/long using GPS Services
                 if (isGPSEnabled) {
-                    if (location == null) {
+                    if (mLocation == null) {
                         locationManager.requestLocationUpdates(
                                 LocationManager.GPS_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        //      Log.d("GPS Enabled", "GPS Enabled");
+                                Define.MIN_TIME_BW_UPDATES,
+                                Define.MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                         if (locationManager != null) {
-                            location = locationManager
+                            mLocation = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
+                            if (mLocation != null) {
+                                latitude = mLocation.getLatitude();
+                                longitude = mLocation.getLongitude();
                             }
                         }
                     }
@@ -133,7 +129,7 @@ public class LocationTracker extends Service implements LocationListener {
             e.printStackTrace();
         }
 
-        return location;
+        return mLocation;
     }
     /**
      * Stop using GPS listener
@@ -149,48 +145,41 @@ public class LocationTracker extends Service implements LocationListener {
      * Function to get latitude
      * */
     public double getLatitude(){
-        if(location != null){
-            latitude = location.getLatitude ();
+        if(mLocation != null){
+            latitude = mLocation.getLatitude ();
         }
 
-        // return latitude
         return latitude;
     }
 
-    /**
+    /*
      * Function to get longitude
-     * */
+     */
     public double getLongitude(){
-        if(location != null){
-            longitude = location.getLongitude();
+        if(mLocation != null){
+            longitude = mLocation.getLongitude();
         }
 
-        // return longitude
         return longitude;
     }
 
-    /**
+    /*
      * Function to check GPS/wifi enabled
-     * @return boolean
-     * */
+     *
+     */
     public boolean canGetLocation() {
         return this.canGetLocation;
     }
 
-    /**
-     * Function to show settings alert dialog
-     * On pressing Settings button will launch Settings Options
-     * */
-
     /*
-     * Function to notify change in location
+     * Function to notify change in mLocation
      * we will give call-back to Presenter class
      * which in turn will update the data
      */
     @Override
     public void onLocationChanged(Location location) {
-        //notify change in location to presenter class
-        LocationListner.getNewLocation(location);
+        //notify change in mLocation to presenter class
+        mLocationListner.getNewLocation (location);
     }
     //override method which we do not implement
     //as per our requirement not all functionality used
@@ -215,12 +204,7 @@ public class LocationTracker extends Service implements LocationListener {
     }
     /*
      * This function is used for Unit Testing only.
-     * Using Robotium or any other such tools, we can verify if
-     * GPS tracking is working correctly or not
-     * Refer test case no. 6
-     * It has 1 callback functions
-     * 1) getNewLocation returns the GPS current location
-     * from our GPS service running in background
+
      */
     public static void LocationTest(final Context context)
     {
@@ -247,16 +231,11 @@ public class LocationTracker extends Service implements LocationListener {
 
         });
         if(testTracker.canGetLocation()) {
-            //  Location TestLocation = testTracker.getLocation();
             Log.d ("LocationTest", "canGetLocationSuccess");
-
-
         }
         else
         {
-
             Log.d("LocationTest","canGetLocationfailure");
-
         }
 
 

@@ -1,12 +1,12 @@
 package com.sample.tourguide.model;
 
-import android.location.Location;
+
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.Collections;
+
 import java.util.Comparator;
-import java.util.List;
+
 
 /**
  * Created by keyur on 08-08-2015.
@@ -86,9 +86,6 @@ public class LocationModel {
       * We create a Comparator function to compare our class object.
       * currently we are sorting only by distance but going ahead
       * if sorting is required by other properties, we can define here
-      * @param LocationResults
-      * @param LocationResults
-      * @return int
       */
 
     public static Comparator<LocationModel> CompareDistance = new Comparator<LocationModel> () {
@@ -100,10 +97,12 @@ public class LocationModel {
 	        /*For ascending order*/
             return Distance1-Distance2;
 
-
-            /*For descending order*/
-            // return Distance2-Distance1;
         }};
+    /*
+      * We create a Comparator function to compare the near most point.
+      * We need to find the near most point from given point
+      * in order to draw line on map
+      */
     public static Comparator<LatLng> createComparator(LatLng p)
     {
         final LatLng finalP = new LatLng (p.latitude,p.longitude);
@@ -112,26 +111,16 @@ public class LocationModel {
             @Override
             public int compare(LatLng p0, LatLng p1)
             {
-               // float[] result1 = new float[1];
-                //float[] result2 = new float[1];
-              //  android.location.Location.distanceBetween(finalP.latitude, finalP.longitude, p0.latitude, p0.longitude, result1);
-                //android.location.Location.distanceBetween(finalP.latitude, finalP.longitude, p1.latitude, p1.longitude, result2);
-               double square1=distanceSq (finalP.latitude, finalP.longitude,p0.latitude,p0.longitude);
-                double square2=distanceSq (finalP.latitude, finalP.longitude,p1.latitude,p1.longitude);
-
-                return Double.compare(square1, square2);
+                float[] result1 = new float[1];
+                float[] result2 = new float[1];
+                //User android standard function to
+                //find the nearmost in given
+                //collection of LatLng
+                android.location.Location.distanceBetween(finalP.latitude, finalP.longitude, p0.latitude, p0.longitude, result1);
+                android.location.Location.distanceBetween(finalP.latitude, finalP.longitude, p1.latitude, p1.longitude, result2);
+               return Double.compare (result1[0],result2[0]);
             }
 
         };
     }
-    public static double distanceSq(double x1, double y1, double x2, double y2) {
-        x2 -= x1;
-        y2 -= y1;
-        return x2 * x2 + y2 * y2;
-    }
-
-
-
-
-
 }
