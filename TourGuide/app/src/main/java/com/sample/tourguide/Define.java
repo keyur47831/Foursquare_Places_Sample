@@ -29,4 +29,5 @@ public class Define {
     public static enum ErrorStatus {
         No_GPS, No_Internet, Parse_Error
     }
+    public static String FOUR_SQUARE_URL="https://api.foursquare.com/v2/venues/search?client_id="+Define.CLIENT_ID+"&client_secret="+Define.CLINED_SECRET+"&v=20150711&limit=100"+"&query=tourist%20attraction";
 }

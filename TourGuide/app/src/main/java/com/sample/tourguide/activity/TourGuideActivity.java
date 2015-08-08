@@ -31,8 +31,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.sample.tourguide.Define;
 import com.sample.tourguide.fragment.FragmentDrawer;
+import com.sample.tourguide.model.LocationModel;
+import com.sample.tourguide.parser.FourSquareDataParser;
 import com.sample.tourguide.service.LocationTracker;
 import com.tourguide.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TourGuideActivity extends AppCompatActivity implements FragmentDrawer.FragmentDrawerListener
@@ -41,9 +46,12 @@ public class TourGuideActivity extends AppCompatActivity implements FragmentDraw
     private FragmentDrawer drawerFragment;
 
     private GoogleMap googleMap;
-    protected static final String TAG = "basic-location-sample";
+    protected static final String TAG = TourGuideActivity.class.getSimpleName ();
     Location mCurrentLocation;
     private LocationTracker mLocationTracker;
+    private String mURL;
+    private List <LocationModel> mLocationData=new ArrayList<> ();
+
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -123,6 +131,20 @@ public class TourGuideActivity extends AppCompatActivity implements FragmentDraw
     } */
     @Override
     public void onDrawerItemSelected(View view, int position) {
+        switch (position)
+        {
+            case 0:
+                //home
+                break;
+            case 1:
+                //markers
+                DisplayMarkers();
+                break;
+            case 2 :
+                //drawpolygons
+
+
+        }
 
     }
     private LocationTracker.onPositionChanged LocationChanged = new LocationTracker.onPositionChanged(){
@@ -229,17 +251,56 @@ public void onClick(DialogInterface dialog,int which){
         // in rare cases when a location is not available.
 
             //initilizeMap();
+          googleMap.clear ();
             LatLng mCurrentLatLng=new LatLng(mCurrentLocation.getLatitude (),mCurrentLocation.getLongitude ());
             MarkerOptions marker = new MarkerOptions ().position(mCurrentLatLng).title("Hello Maps ");
 
 // adding marker
             marker.icon(BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_BLUE));
             googleMap.addMarker (marker);
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(mCurrentLatLng).zoom(14).build();
-            googleMap.setMyLocationEnabled(true);
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(mCurrentLatLng).zoom(12).build();
+            googleMap.setMyLocationEnabled (true);
             googleMap.animateCamera (CameraUpdateFactory.newCameraPosition (cameraPosition));
 
         }
+    public void DisplayMarkers()
+    {
+        mURL=Define.FOUR_SQUARE_URL;
+        mURL+="&ll="+mCurrentLocation.getLatitude ()+","+mCurrentLocation.getLongitude ();
+        FourSquareDataParser mJsonParser=new FourSquareDataParser (this,mURL,mListner);
+        mJsonParser.loadJson ();
     }
+    public void AddMarkers()
+    {
+        for(int i=0;i<mLocationData.size ();i++) {
+            LocationModel mItem = mLocationData.get(i);
+            Log.d(TAG, "LL" + mItem.getLongitude ()+mItem.getLatitude ());
+            MarkerOptions marker = new MarkerOptions ().position (new LatLng (mItem.getLatitude (),mItem.getLongitude ()));
+            marker.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN));
+            marker.title (mItem.getName ());
+            marker.snippet (mItem.getAddress ());
+            //CameraPosition cameraPosition = new CameraPosition.Builder().target (new LatLng (mItem.getLatitude (), mItem.getLongitude ()).zoom (14).build ();
+            googleMap.addMarker (marker);
+        }
+    }
+    private FourSquareDataParser.onJsonParseCompleted mListner= new FourSquareDataParser.onJsonParseCompleted(){
+
+        @Override
+        public void onParseSuccess(List<LocationModel> feed) {
+            Log.d(TAG, "onParsesuccess size" + feed.size());
+            mLocationData=feed;
+            AddMarkers();
+
+        }
+
+        @Override
+        public void onParseFailure() {
+
+            //Display Error Toast
+            //     Log.d(TAG, "onParseFailure");
+            Toast.makeText(getApplicationContext(), R.string.connection_error, Toast.LENGTH_SHORT).show();
+        }
+    };
+}
 
 

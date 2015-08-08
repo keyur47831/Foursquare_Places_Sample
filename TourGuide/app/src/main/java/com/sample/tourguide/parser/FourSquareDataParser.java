@@ -1,10 +1,12 @@
 package com.sample.tourguide.parser;
 
 import android.content.Context;
+import android.util.Log;
+
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.sample.tourguide.Define;
@@ -27,6 +29,7 @@ public class FourSquareDataParser {
     //foursquare URL to fetch data
     String url;
     // GPS related variable
+    String TAG=FourSquareDataParser.class.getSimpleName ();
 
     private RequestQueue mRequestQueue;
     public FourSquareDataParser(Context context,String url, onJsonParseCompleted listner)
@@ -44,24 +47,24 @@ public class FourSquareDataParser {
     }
     public void loadJson()
     {
-        String FourSquareURL=new String();
+
         //Create Instance of JsonObjectRequest
         // This object will make asynchronous http call to fetch data
         // It will register callback function onResponse for the data
         // and will also provide callback function for error handling
 
         //First check if network connection is available or not
-        if(Define.isDataConnAvailable (mContext)){
+       // if(Define.isDataConnAvailable (mContext)){
 
-
+        Log.d(TAG, url);
                 //JsonObject request using volley
-                JsonObjectRequest request = new JsonObjectRequest(FourSquareURL, null,
+                JsonObjectRequest request = new JsonObjectRequest(url, null,
                         new Response.Listener<JSONObject>() {
 
                             @Override
                             public void onResponse(JSONObject response) {
                                 parseJSONFromString(response.toString());
-                                // Log.d(TAG, response.toString());
+                                Log.d (TAG, response.toString ());
                             }
                         }, new Response.ErrorListener() {
                     @Override
@@ -77,7 +80,7 @@ public class FourSquareDataParser {
             mRequestQueue.add (request);
 
             }
-        }
+       // }
 
 
     /*
