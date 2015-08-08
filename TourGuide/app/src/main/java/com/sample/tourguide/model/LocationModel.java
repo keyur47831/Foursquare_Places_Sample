@@ -1,6 +1,12 @@
 package com.sample.tourguide.model;
 
+import android.location.Location;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by keyur on 08-08-2015.
@@ -98,4 +104,34 @@ public class LocationModel {
             /*For descending order*/
             // return Distance2-Distance1;
         }};
+    public static Comparator<LatLng> createComparator(LatLng p)
+    {
+        final LatLng finalP = new LatLng (p.latitude,p.longitude);
+        return new Comparator<LatLng>()
+        {
+            @Override
+            public int compare(LatLng p0, LatLng p1)
+            {
+               // float[] result1 = new float[1];
+                //float[] result2 = new float[1];
+              //  android.location.Location.distanceBetween(finalP.latitude, finalP.longitude, p0.latitude, p0.longitude, result1);
+                //android.location.Location.distanceBetween(finalP.latitude, finalP.longitude, p1.latitude, p1.longitude, result2);
+               double square1=distanceSq (finalP.latitude, finalP.longitude,p0.latitude,p0.longitude);
+                double square2=distanceSq (finalP.latitude, finalP.longitude,p1.latitude,p1.longitude);
+
+                return Double.compare(square1, square2);
+            }
+
+        };
+    }
+    public static double distanceSq(double x1, double y1, double x2, double y2) {
+        x2 -= x1;
+        y2 -= y1;
+        return x2 * x2 + y2 * y2;
+    }
+
+
+
+
+
 }

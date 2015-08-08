@@ -3,6 +3,7 @@ package com.sample.tourguide.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
@@ -29,6 +30,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.sample.tourguide.Define;
 import com.sample.tourguide.fragment.FragmentDrawer;
 import com.sample.tourguide.model.LocationModel;
@@ -37,6 +40,8 @@ import com.sample.tourguide.service.LocationTracker;
 import com.tourguide.R;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -48,10 +53,11 @@ public class TourGuideActivity extends AppCompatActivity implements FragmentDraw
     private GoogleMap googleMap;
     protected static final String TAG = TourGuideActivity.class.getSimpleName ();
     Location mCurrentLocation;
+    List<LatLng> mNearByLocation=new ArrayList<> ();
     private LocationTracker mLocationTracker;
     private String mURL;
     private List <LocationModel> mLocationData=new ArrayList<> ();
-
+    private boolean mDisplayPath=false;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -134,7 +140,7 @@ public class TourGuideActivity extends AppCompatActivity implements FragmentDraw
         switch (position)
         {
             case 0:
-                //home
+                initilizeMap ();
                 break;
             case 1:
                 //markers
@@ -142,6 +148,9 @@ public class TourGuideActivity extends AppCompatActivity implements FragmentDraw
                 break;
             case 2 :
                 //drawpolygons
+                DisplayPath();
+                break;
+
 
 
         }
@@ -243,6 +252,47 @@ public void onClick(DialogInterface dialog,int which){
         // Showing Alert Message
         alertDialog.show();
     }
+    public void DisplayPath()
+    {
+        if(mNearByLocation!=null)
+        {
+
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color (Color.RED);
+            polylineOptions.width (5);
+            polylineOptions.add (new LatLng (mCurrentLocation.getLatitude (), mCurrentLocation.getLongitude ()));
+            LocationModel newStart =mLocationData.get(0);
+            polylineOptions.add (new LatLng (newStart.getLatitude (), newStart.getLongitude ()));
+            googleMap.addPolyline (polylineOptions);
+           // mNearByLocation.remove ()
+                Collections.sort (mNearByLocation, LocationModel.createComparator (new LatLng (newStart.getLatitude (), newStart.getLongitude ())));
+                 mNearByLocation.remove (0);
+                polylineOptions.add (mNearByLocation.get (0));
+                googleMap.addPolyline (polylineOptions);
+                //mNearByLocation.remove (0);
+
+                while(mNearByLocation.size()!=1)
+                {
+                    Log.d (TAG,"--"+mNearByLocation.size ());
+                    LatLng newStartLatLng=new LatLng (mNearByLocation.get(0).latitude,mNearByLocation.get(0).longitude);
+                    mNearByLocation.remove (0);
+                    Collections.sort (mNearByLocation, LocationModel.createComparator (newStartLatLng));
+                   polylineOptions.add (mNearByLocation.get(0));
+                   googleMap.addPolyline (polylineOptions);
+
+                    if(mNearByLocation.size ()==1)
+                    {
+                        polylineOptions.add (new LatLng (mCurrentLocation.getLatitude (), mCurrentLocation.getLongitude ()));
+                        googleMap.addPolyline (polylineOptions);
+                        break;
+                    }
+                }
+
+
+        }
+
+
+    }
 
     public void UpdateMap() {
         // Provides a simple way of getting a device's location and is well suited for
@@ -252,6 +302,7 @@ public void onClick(DialogInterface dialog,int which){
 
             //initilizeMap();
           googleMap.clear ();
+
             LatLng mCurrentLatLng=new LatLng(mCurrentLocation.getLatitude (),mCurrentLocation.getLongitude ());
             MarkerOptions marker = new MarkerOptions ().position(mCurrentLatLng).title("Hello Maps ");
 
@@ -272,22 +323,35 @@ public void onClick(DialogInterface dialog,int which){
     }
     public void AddMarkers()
     {
+        if(mNearByLocation!=null)
+          mNearByLocation.clear ();
         for(int i=0;i<mLocationData.size ();i++) {
-            LocationModel mItem = mLocationData.get(i);
-            Log.d(TAG, "LL" + mItem.getLongitude ()+mItem.getLatitude ());
+            LocationModel mItem = mLocationData.get (i);
+            Log.d (TAG, "LL" + mItem.getLongitude () + mItem.getLatitude ());
             MarkerOptions marker = new MarkerOptions ().position (new LatLng (mItem.getLatitude (),mItem.getLongitude ()));
             marker.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN));
             marker.title (mItem.getName ());
             marker.snippet (mItem.getAddress ());
             //CameraPosition cameraPosition = new CameraPosition.Builder().target (new LatLng (mItem.getLatitude (), mItem.getLongitude ()).zoom (14).build ();
             googleMap.addMarker (marker);
+            mNearByLocation.add (new LatLng (mItem.getLatitude (), mItem.getLongitude ()));
+
+
         }
+
+
     }
+
+
     private FourSquareDataParser.onJsonParseCompleted mListner= new FourSquareDataParser.onJsonParseCompleted(){
 
         @Override
         public void onParseSuccess(List<LocationModel> feed) {
             Log.d(TAG, "onParsesuccess size" + feed.size());
+            if(mLocationData!=null) {
+                mLocationData.clear ();
+
+            }
             mLocationData=feed;
             AddMarkers();
 

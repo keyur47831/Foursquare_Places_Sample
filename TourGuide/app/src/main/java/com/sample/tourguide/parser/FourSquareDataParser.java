@@ -96,7 +96,7 @@ public class FourSquareDataParser {
             //check if we got correct response
             if (jsonObject.has("response"))
                 //check if venues tag is present
-                if (jsonObject.getJSONObject("response").has("venues")) {
+                if (jsonObject.getJSONObject ("response").has("venues")) {
                     //retrive the array of venues
                     JSONArray jsonArray = jsonObject.getJSONObject("response").getJSONArray("venues");
                     //we need to loop through each venues node to parse data
