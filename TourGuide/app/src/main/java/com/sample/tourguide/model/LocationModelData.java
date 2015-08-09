@@ -11,7 +11,7 @@ import java.util.Comparator;
 /**
  * Created by keyur on 08-08-2015.
  */
-public class LocationModel {
+public class LocationModelData {
 
     private String Name;
     private int Distance;
@@ -24,7 +24,7 @@ public class LocationModel {
      * @return LocationResults
      */
 
-    public LocationModel()
+    public LocationModelData ()
     {
         super();
 
@@ -88,9 +88,9 @@ public class LocationModel {
       * if sorting is required by other properties, we can define here
       */
 
-    public static Comparator<LocationModel> CompareDistance = new Comparator<LocationModel> () {
+    public static Comparator<LocationModelData> CompareDistance = new Comparator<LocationModelData> () {
 
-        public int compare(LocationModel s1, LocationModel s2) {
+        public int compare(LocationModelData s1, LocationModelData s2) {
 
             int Distance1 = s1.getDistance();
             int Distance2 = s2.getDistance();

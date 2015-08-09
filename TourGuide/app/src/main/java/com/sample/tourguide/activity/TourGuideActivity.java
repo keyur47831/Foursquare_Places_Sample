@@ -12,7 +12,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -26,7 +25,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.sample.tourguide.Define;
 import com.sample.tourguide.fragment.FragmentDrawer;
-import com.sample.tourguide.model.LocationModel;
+import com.sample.tourguide.model.LocationModelData;
 import com.sample.tourguide.parser.FourSquareDataParser;
 import com.sample.tourguide.service.LocationTracker;
 import com.sample.tourguide.R;
@@ -53,7 +52,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     private String mURL;
     //List of all the places nearby
     //Refer model class
-    private List <LocationModel> mLocationData=new ArrayList<> ();
+    private List <LocationModelData> mLocationData=new ArrayList<> ();
     //For logs
     private static final String TAG = TourGuideActivity.class.getSimpleName ();
     @Override
@@ -156,7 +155,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
                 if(AppController.getInstance ().isDataConnAvailable ()&& AppController.getInstance ().isGPSEnable ()) {
                     if(mLocationTracker==null)
                         mLocationTracker=new LocationTracker(LocationChanged);
-                    DisplayMarkers ();
+                    displayMarkers ();
                 }
                 else {
                     //Check if Internet is enabled or not
@@ -175,9 +174,9 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
                         mLocationTracker=new LocationTracker(LocationChanged);
                     //Check if Marker data available
                     if(mLocationData==null)
-                        DisplayMarkers();
+                        displayMarkers ();
                     //Display path on map
-                    DisplayPath();
+                    displayPath ();
                     //Display path on map
 
                 }
@@ -202,7 +201,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
         public  void getNewLocation(Location location)
         {
             mCurrentLocation=location;
-            UpdateMap();
+            updateMap ();
         }
 
     };
@@ -213,7 +212,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     public void onMapReady(GoogleMap map) {
         mGoogleMap=map;
         if(mCurrentLocation!=null) {
-            UpdateMap ();
+            updateMap ();
         }
     }
     /*
@@ -249,14 +248,14 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     /*
     * This function is used to display the path connecting the markers
      */
-    public void DisplayPath()
+    public void displayPath ()
     {
 
         //Error Checking
         if(mNearByLocation.size ()>0 && mLocationData.size ()>0)
         {
             List<LatLng> refNearbyData=mNearByLocation;
-            Log.d (TAG,"keyur" +refNearbyData.size () );
+
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions.color (Color.BLUE);
             polylineOptions.width (5);
@@ -265,14 +264,14 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
             //Next will be the location nearby to current location
             //the data received from json
             //is sorted based on distance from current location
-            LocationModel newStart =mLocationData.get(0);
+            LocationModelData newStart =mLocationData.get(0);
             polylineOptions.add (new LatLng (newStart.getLatitude (), newStart.getLongitude ()));
             mGoogleMap.addPolyline (polylineOptions);
             //Now our new start  location is closest point
             //from current location so first we sort with new start
             //and then remove it. So we get the next nearmost
             //from new start
-                Collections.sort (refNearbyData, LocationModel.createComparator (new LatLng (newStart.getLatitude (), newStart.getLongitude ())));
+                Collections.sort (refNearbyData, LocationModelData.createComparator (new LatLng (newStart.getLatitude (), newStart.getLongitude ())));
             //Remove this as we have already
             //connected it from current location
             refNearbyData.remove (0);
@@ -285,13 +284,13 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
                 while(refNearbyData.size()!=1)
                 {
 
-                    Log.d (TAG,"keyur" +refNearbyData.size () );
+
                     LatLng newStartLatLng=new LatLng (refNearbyData.get(0).latitude,refNearbyData.get(0).longitude);
                     refNearbyData.remove (0);
                     //For each location, we will sort the nearby list
                     //again the find the nearmost
                     //point
-                    Collections.sort (refNearbyData, LocationModel.createComparator (newStartLatLng));
+                    Collections.sort (refNearbyData, LocationModelData.createComparator (newStartLatLng));
                    polylineOptions.add (refNearbyData.get(0));
                    mGoogleMap.addPolyline (polylineOptions);
                     //Did We reach end of list ??
@@ -317,7 +316,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
       Gets the best and most recent location currently available, which may be null
       in rare cases when a location is not available.
      */
-    public void UpdateMap() {
+    public void updateMap () {
         // Provides a simple way of getting a device's location and is well suited for
         // applications that do not require a fine-grained location and that do not need location
         // updates. Gets the best and most recent location currently available, which may be null
@@ -336,7 +335,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
      Function to set the URL for foursquare
      and will get the data about nearby places
      */
-    public void DisplayMarkers()
+    public void displayMarkers ()
     {
         //All the string contants are defines in
         //in single location for ease
@@ -350,12 +349,12 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     /*
       Function to all the nearby places marker
      */
-    public void AddMarkers()
+    public void addMarkers ()
     {    //First clear the old data
         if(mNearByLocation!=null)
           mNearByLocation.clear ();
         for(int i=0;i<mLocationData.size ();i++) {
-            LocationModel mItem = mLocationData.get (i);
+            LocationModelData mItem = mLocationData.get (i);
             MarkerOptions marker = new MarkerOptions ().position (new LatLng (mItem.getLatitude (),mItem.getLongitude ()));
             marker.icon (BitmapDescriptorFactory.fromResource (R.drawable.ic_pin));
             marker.title (mItem.getName ());
@@ -373,12 +372,12 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     private FourSquareDataParser.onJsonParseCompleted mListner= new FourSquareDataParser.onJsonParseCompleted(){
 
         @Override
-        public void onParseSuccess(List<LocationModel> feed) {
+        public void onParseSuccess(List<LocationModelData> feed) {
             if(mLocationData!=null) {
                 mLocationData.clear ();
             }
             mLocationData=feed;
-            AddMarkers();
+            addMarkers ();
 
         }
 
@@ -395,15 +394,15 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setMessage(getString (R.string.no_GPS))
                 .setCancelable (false)
-                .setPositiveButton(getString (R.string.GPS_connection),
-                        new DialogInterface.OnClickListener(){
-                            public void onClick(DialogInterface dialog, int id){
-                                Intent callGPSSettingIntent = new Intent(
+                .setPositiveButton (getString (R.string.GPS_connection),
+                        new DialogInterface.OnClickListener () {
+                            public void onClick (DialogInterface dialog, int id) {
+                                Intent callGPSSettingIntent = new Intent (
                                         android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                                startActivity(callGPSSettingIntent);
+                                startActivity (callGPSSettingIntent);
                             }
                         });
-        alertDialogBuilder.setNegativeButton("Cancel",
+        alertDialogBuilder.setNegativeButton(getString (R.string.alert_dialog_cancel),
                 new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog, int id){
                         dialog.cancel();

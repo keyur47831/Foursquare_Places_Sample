@@ -2,17 +2,14 @@ package com.sample.tourguide.parser;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.sample.tourguide.R;
 import com.sample.tourguide.activity.AppController;
-import com.sample.tourguide.model.LocationModel;
+import com.sample.tourguide.model.LocationModelData;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,7 +29,7 @@ public class FourSquareDataParser {
     String mURL;
     // for logs
     String TAG=FourSquareDataParser.class.getSimpleName ();
-    List<LocationModel> ParserData = new ArrayList<> ();
+    List<LocationModelData> ParserData = new ArrayList<> ();
 
     private RequestQueue mRequestQueue;
     public FourSquareDataParser(String url, onJsonParseCompleted listner)
@@ -96,7 +93,7 @@ public class FourSquareDataParser {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         //retrive each venue details
                         JSONObject jsonVenues = (JSONObject) jsonArray.get(i);
-                        LocationModel SingleLocationRow = new LocationModel();
+                        LocationModelData SingleLocationRow = new LocationModelData ();
                         //check if name of cafe available
                         if (jsonArray.getJSONObject(i).has("name")) {
                             SingleLocationRow.setName (jsonArray.getJSONObject (i).getString ("name"));
@@ -188,7 +185,7 @@ public class FourSquareDataParser {
             //the location based on distance
             //we have defined our custom compartor to
             //support sorting
-            Collections.sort (ParserData, LocationModel.CompareDistance);
+            Collections.sort (ParserData, LocationModelData.CompareDistance);
             //notify success with sorted arraylist
             mJsonParserListner.onParseSuccess (ParserData);
 
@@ -203,7 +200,7 @@ public class FourSquareDataParser {
      */
     public interface onJsonParseCompleted {
 
-        void onParseSuccess(List<LocationModel> Data);
+        void onParseSuccess(List<LocationModelData> Data);
         void onParseFailure();
 
     }
@@ -212,7 +209,7 @@ public class FourSquareDataParser {
                 url, new onJsonParseCompleted() {
 
             @Override
-            public void onParseSuccess(List<LocationModel>  feed) {
+            public void onParseSuccess(List<LocationModelData>  feed) {
                 Log.d ("JsonParseData", "JSONParseSuccess " +
                         feed.size () + " records.");
 
