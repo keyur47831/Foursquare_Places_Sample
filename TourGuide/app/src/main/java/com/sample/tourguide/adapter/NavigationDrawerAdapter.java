@@ -4,7 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 
 import com.sample.tourguide.model.NavDrawerItem;
-import com.tourguide.R;
+import com.sample.tourguide.R;
 
 import java.util.Collections;
 import java.util.List;

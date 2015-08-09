@@ -2,6 +2,7 @@ package com.sample.tourguide.parser;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -9,6 +10,8 @@ import com.android.volley.VolleyError;
 
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.sample.tourguide.R;
+import com.sample.tourguide.activity.AppController;
 import com.sample.tourguide.model.LocationModel;
 
 import org.json.JSONArray;
@@ -29,17 +32,18 @@ public class FourSquareDataParser {
     String mURL;
     // for logs
     String TAG=FourSquareDataParser.class.getSimpleName ();
+    List<LocationModel> ParserData = new ArrayList<> ();
 
     private RequestQueue mRequestQueue;
-    public FourSquareDataParser(Context context,String url, onJsonParseCompleted listner)
+    public FourSquareDataParser(String url, onJsonParseCompleted listner)
     {
         super();
-        this.mContext=context;
+
         this.mURL =url;
         //this listner will perform call-back to our UI Activity
         this.mJsonParserListner =listner;
         //Init our Volley request queue
-        mRequestQueue= Volley.newRequestQueue (mContext);
+        mRequestQueue=AppController.getInstance ().getRequestQueue ();
     }
     public void loadJson()
     {
@@ -79,7 +83,7 @@ public class FourSquareDataParser {
      */
     private void parseJSONFromString(final String JSONdata) {
 
-        ArrayList<LocationModel> ParserData = new ArrayList<> ();
+
         try {
             JSONObject jsonObject = new JSONObject(JSONdata);
             //check if we got correct response
@@ -203,4 +207,25 @@ public class FourSquareDataParser {
         void onParseFailure();
 
     }
+    public static void JSONFeedParserTest( String url) {
+        final FourSquareDataParser parser = new FourSquareDataParser(
+                url, new onJsonParseCompleted() {
+
+            @Override
+            public void onParseSuccess(List<LocationModel>  feed) {
+                Log.d ("JsonParseData", "JSONParseSuccess " +
+                        feed.size () + " records.");
+
+            }
+
+            @Override
+            public void onParseFailure() {
+                Log.d ("JsonParseData", "JSONParsefailure");
+
+            }
+
+        });
+        parser.loadJson();
+    }
+
 }

@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,7 +29,7 @@ import com.sample.tourguide.fragment.FragmentDrawer;
 import com.sample.tourguide.model.LocationModel;
 import com.sample.tourguide.parser.FourSquareDataParser;
 import com.sample.tourguide.service.LocationTracker;
-import com.tourguide.R;
+import com.sample.tourguide.R;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,9 +40,9 @@ import java.util.List;
 public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCallback,FragmentDrawer.FragmentDrawerListener
 {
     //UI related declarations
-    private Toolbar mToolbar;
-    private FragmentDrawer mDrawerFragment;
-    private GoogleMap mGoogleMap;
+    protected Toolbar mToolbar;
+    protected FragmentDrawer mDrawerFragment;
+    protected GoogleMap mGoogleMap;
     //To store our current location
     Location mCurrentLocation;
     //List of nearby places
@@ -71,25 +72,28 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
                 (R.id.fragment_navigation_drawer, (DrawerLayout) findViewById (R.id.drawer_layout), mToolbar);
         mDrawerFragment.setDrawerListener (this);
 
+
         //Check if GPS is enabled or not
-        if(!Define.isGPSEnable (this))
+        if (!AppController.getInstance ().isGPSEnable ())
         {
             //Ask the user to enable GPS
             showGPSDisabledAlertToUser();
+           return;
         }
         else
         {
             //Check if Internet is enabled or not
-           if(Define.isDataConnAvailable (this)) {
+           if(AppController.getInstance ().isDataConnAvailable ()) {
                //We can now init our location service
-               //and loading google map
-               mLocationTracker=new LocationTracker(this,LocationChanged);
+               //and loading google map and location tracker
+               mLocationTracker=new LocationTracker(LocationChanged);
                // Loading map
                initMap ();
            }
         else
            {    //Ask the user to enable Internet access
-                   showInternetSettingAlert ();
+               showInternetSettingAlert ();
+              return;
            }
 
     }}
@@ -105,30 +109,16 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
     }
-    @Override
-    protected void onStart() {
-        super.onStart ();
-        //Start the Location Service
-        mCurrentLocation=mLocationTracker.getmLocation ();
 
-    }
     @Override
     protected void onStop () {
         super.onStop ();
         //Release the location service
         //since our activity is about to destroy
         if(mLocationTracker!=null)
-            mLocationTracker.canGetLocation ();
+            mLocationTracker.stopUsingGPS ();
     }
-    @Override
-    public void onResume()
-    {
-        super.onResume ();
-        //check if map is not null
-            if (mGoogleMap == null)
-                initMap ();
 
-    }
    /*
    * Override to handle the item selected
     */
@@ -136,21 +126,70 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     public void onDrawerItemSelected(View view, int position) {
         switch (position)
         {
+            //This might happen that user has turned off the gps or data connection
+            //once the activity is launched so we check here
+            //second method is to register for GPS and Network changes intent
             case 0:
-                //clear the map and load again
-                mGoogleMap=null;
-                initMap ();
+
+                if(AppController.getInstance ().isDataConnAvailable ()&& AppController.getInstance ().isGPSEnable ()) {
+                    //clear the map and load again
+                    //<testcase> : Enable the GPS and come back to our application
+                    //the service is not started
+                    if(mLocationTracker==null)
+                    mLocationTracker=new LocationTracker(LocationChanged);
+                   mGoogleMap=null;
+                    initMap ();
+                }
+                else {
+                    //Check if Internet is enabled or not
+                    if (!AppController.getInstance ().isDataConnAvailable ()) {
+                        showInternetSettingAlert ();
+                    } else
+                    {    //Ask the user to enable Internet access
+                        showGPSDisabledAlertToUser ();
+
+                    }
+                }
                 break;
             case 1:
                 //Display markers on the map
-                DisplayMarkers();
+                if(AppController.getInstance ().isDataConnAvailable ()&& AppController.getInstance ().isGPSEnable ()) {
+                    if(mLocationTracker==null)
+                        mLocationTracker=new LocationTracker(LocationChanged);
+                    DisplayMarkers ();
+                }
+                else {
+                    //Check if Internet is enabled or not
+                    if (!AppController.getInstance ().isDataConnAvailable ()) {
+                        showInternetSettingAlert ();
+                    } else
+                    {    //Ask the user to enable Internet access
+                        showGPSDisabledAlertToUser ();
+
+                    }
+                }
                 break;
             case 2 :
-                //Check if Marker data available
-                if(mLocationData==null)
-                    DisplayMarkers();
-                //Display path on map
-                DisplayPath();
+                if(AppController.getInstance ().isDataConnAvailable ()&& AppController.getInstance ().isGPSEnable ()) {
+                    if(mLocationTracker==null)
+                        mLocationTracker=new LocationTracker(LocationChanged);
+                    //Check if Marker data available
+                    if(mLocationData==null)
+                        DisplayMarkers();
+                    //Display path on map
+                    DisplayPath();
+                    //Display path on map
+
+                }
+                else {
+                    //Check if Internet is enabled or not
+                    if (!AppController.getInstance ().isDataConnAvailable ()) {
+                        showInternetSettingAlert ();
+                    } else {    //Ask the user to enable Internet access
+                        showGPSDisabledAlertToUser ();
+                        return;
+                    }
+                }
                 break;
         }
 
@@ -216,6 +255,8 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
         //Error Checking
         if(mNearByLocation.size ()>0 && mLocationData.size ()>0)
         {
+            List<LatLng> refNearbyData=mNearByLocation;
+            Log.d (TAG,"keyur" +refNearbyData.size () );
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions.color (Color.BLUE);
             polylineOptions.width (5);
@@ -231,33 +272,37 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
             //from current location so first we sort with new start
             //and then remove it. So we get the next nearmost
             //from new start
-                Collections.sort (mNearByLocation, LocationModel.createComparator (new LatLng (newStart.getLatitude (), newStart.getLongitude ())));
+                Collections.sort (refNearbyData, LocationModel.createComparator (new LatLng (newStart.getLatitude (), newStart.getLongitude ())));
             //Remove this as we have already
             //connected it from current location
-                 mNearByLocation.remove (0);
-                polylineOptions.add (mNearByLocation.get (0));
+            refNearbyData.remove (0);
+                polylineOptions.add (refNearbyData.get (0));
                 mGoogleMap.addPolyline (polylineOptions);
             //Now we loop from mNearByLocation and checking
             //which is the next near most
             // for the given point.
 
-                while(mNearByLocation.size()!=1)
+                while(refNearbyData.size()!=1)
                 {
-                    LatLng newStartLatLng=new LatLng (mNearByLocation.get(0).latitude,mNearByLocation.get(0).longitude);
-                    mNearByLocation.remove (0);
+
+                    Log.d (TAG,"keyur" +refNearbyData.size () );
+                    LatLng newStartLatLng=new LatLng (refNearbyData.get(0).latitude,refNearbyData.get(0).longitude);
+                    refNearbyData.remove (0);
                     //For each location, we will sort the nearby list
                     //again the find the nearmost
                     //point
-                    Collections.sort (mNearByLocation, LocationModel.createComparator (newStartLatLng));
-                   polylineOptions.add (mNearByLocation.get(0));
+                    Collections.sort (refNearbyData, LocationModel.createComparator (newStartLatLng));
+                   polylineOptions.add (refNearbyData.get(0));
                    mGoogleMap.addPolyline (polylineOptions);
                     //Did We reach end of list ??
-                    if(mNearByLocation.size ()==1)
+                    if(refNearbyData.size ()==1)
                     {
                         polylineOptions.add (new LatLng (mCurrentLocation.getLatitude (), mCurrentLocation.getLongitude ()));
                         mGoogleMap.addPolyline (polylineOptions);
                         break;
                     }
+                    //free the object
+                    newStartLatLng=null;
                 }
 
 
@@ -266,6 +311,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
 
 
     }
+
     /*
       Provides a simple way of getting a device's location.
       Gets the best and most recent location currently available, which may be null
@@ -282,8 +328,8 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
            // adding marker
             marker.icon(BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_BLUE));
             mGoogleMap.addMarker (marker);
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(mCurrentLatLng).zoom(12).build();
-            mGoogleMap.setMyLocationEnabled (true);
+            CameraPosition cameraPosition = new CameraPosition.Builder().target (mCurrentLatLng).zoom (12).build ();
+        mGoogleMap.setMyLocationEnabled (true);
            mGoogleMap.animateCamera (CameraUpdateFactory.newCameraPosition (cameraPosition));
     }
     /*
@@ -294,10 +340,12 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
     {
         //All the string contants are defines in
         //in single location for ease
-        mURL=Define.FOUR_SQUARE_URL;
-        mURL+="&ll="+mCurrentLocation.getLatitude ()+","+mCurrentLocation.getLongitude ();
-        FourSquareDataParser mJsonParser=new FourSquareDataParser (this,mURL,mListner);
-        mJsonParser.loadJson ();
+        if(mCurrentLocation!=null) {
+            mURL = Define.FOUR_SQUARE_URL;
+            mURL += "&ll=" + mCurrentLocation.getLatitude () + "," + mCurrentLocation.getLongitude ();
+            FourSquareDataParser mJsonParser = new FourSquareDataParser (mURL, mListner);
+            mJsonParser.loadJson ();
+        }
     }
     /*
       Function to all the nearby places marker

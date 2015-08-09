@@ -23,7 +23,8 @@ package com.sample.tourguide.service;
         import android.widget.Toast;
 
         import com.sample.tourguide.Define;
-        import com.tourguide.R;
+        import com.sample.tourguide.R;
+        import com.sample.tourguide.activity.AppController;
 
 //import com.foursquare.sample.coffeesearch.R;
 
@@ -59,9 +60,9 @@ public class LocationTracker extends Service implements LocationListener {
     * @param void
     * @return LocationResults
     */
-    public LocationTracker(Context context ,onPositionChanged listner)
+    public LocationTracker(onPositionChanged listner)
     {
-        this.mContext=context;
+        this.mContext= AppController.getInstance ();
         this.mLocationListner =listner;
         //init the mLocation service
         getmLocation ();
@@ -206,23 +207,23 @@ public class LocationTracker extends Service implements LocationListener {
      * This function is used for Unit Testing only.
 
      */
-    public static void LocationTest(final Context context)
+    public static void LocationTest()
     {
 
-        final LocationTracker testTracker=new LocationTracker(context,new onPositionChanged(){
+        final LocationTracker testTracker=new LocationTracker(new onPositionChanged(){
             public void getNewLocation(Location location)
             {
 
                 if(location!=null)
                 {
                     Log.d("LocationTest", "canGetLocationSuccess");
-                    Toast.makeText(context, R.string.success, Toast.LENGTH_SHORT).show();
+
                 }
                 else
                 {
 
                     Log.d("LocationTest","canGetLocationfailure");
-                    Toast.makeText(context, R.string.fail, Toast.LENGTH_SHORT).show();
+
 
                 }
 

@@ -15,21 +15,7 @@ public class Define {
 
     // The minimum time between updates in milliseconds
     public static final long MIN_TIME_BW_UPDATES = 1000 * 20 * 1; // 20 sec aggressive
-    public  static boolean isDataConnAvailable(final Context mContext)
-    {
-        ConnectivityManager connectivityManager = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager.getActiveNetworkInfo() == null || !connectivityManager.getActiveNetworkInfo().isConnected())
-        {
-            //No Internet
-            return false;
-        }
-        return true;
-    }
-    public  static boolean isGPSEnable(final Context mContext)
-    {
-        LocationManager service = (LocationManager) mContext.getSystemService (Context.LOCATION_SERVICE);
-        return service.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
+
     public static enum ErrorStatus {
         No_GPS, No_Internet, Parse_Error
     }

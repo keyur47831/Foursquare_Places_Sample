@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 
 import com.sample.tourguide.adapter.NavigationDrawerAdapter;
 import com.sample.tourguide.model.NavDrawerItem;
-import com.tourguide.R;
+import com.sample.tourguide.R;
 
 import java.util.ArrayList;
 import java.util.List;
