@@ -217,7 +217,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
         if(mNearByLocation.size ()>0 && mLocationData.size ()>0)
         {
             PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.color (Color.RED);
+            polylineOptions.color (Color.BLUE);
             polylineOptions.width (5);
             //The first point to start is current location
             polylineOptions.add (new LatLng (mCurrentLocation.getLatitude (), mCurrentLocation.getLongitude ()));
@@ -309,7 +309,7 @@ public class TourGuideActivity extends AppCompatActivity implements OnMapReadyCa
         for(int i=0;i<mLocationData.size ();i++) {
             LocationModel mItem = mLocationData.get (i);
             MarkerOptions marker = new MarkerOptions ().position (new LatLng (mItem.getLatitude (),mItem.getLongitude ()));
-            marker.icon (BitmapDescriptorFactory.defaultMarker (BitmapDescriptorFactory.HUE_GREEN));
+            marker.icon (BitmapDescriptorFactory.fromResource (R.drawable.ic_pin));
             marker.title (mItem.getName ());
             marker.snippet (mItem.getAddress ());
             mGoogleMap.addMarker (marker);
