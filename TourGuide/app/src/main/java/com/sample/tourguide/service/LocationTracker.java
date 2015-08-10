@@ -26,8 +26,6 @@ package com.sample.tourguide.service;
         import com.sample.tourguide.R;
         import com.sample.tourguide.activity.AppController;
 
-//import com.foursquare.sample.coffeesearch.R;
-
 /**
  * Created by keyur on 14-07-2015.
  * This is a Service running in background
