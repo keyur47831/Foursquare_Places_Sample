@@ -8,9 +8,7 @@ import android.net.ConnectivityManager;
  * Created by keyur on 06-08-2015.
  */
 public class Define {
-    //public static String GOOGLE_KEY="AIzaSyAY-pIjIay2nShWwyCF0QkjwY92d_3tvss";
-    public static String CLIENT_ID="XWLGRC03I0EFFEFCSIKSRTDVN5IK5Y1JMBR4DOWOAK2TC25C";
-    public static String CLIENT_SECRET="K1QFNQVG0JSK22B0ASDZXRTDT2FEVBTTQS2KSESFRWVW1153";
+   
     public static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
 
     // The minimum time between updates in milliseconds
